@@ -416,6 +416,9 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 		} elseif ($e instanceof Doctrine\DBAL\Exception\DriverException) {
 			if (($prev = $e->getPrevious()) && ($item = Helpers::findTrace($e->getTrace(), Doctrine\DBAL\DBALException::class . '::driverExceptionDuringQuery'))) {
+				if (!isset($item['args'])) {
+					return null;
+				}
 				/** @var \Doctrine\DBAL\Driver $driver */
 				$driver = $item['args'][0];
 				$params = isset($item['args'][3]) ? $item['args'][3] : [];
@@ -441,14 +444,14 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 				$sql = $e->queryString;
 
 			} elseif ($item = Helpers::findTrace($e->getTrace(), Doctrine\DBAL\Connection::class . '::executeQuery')) {
-				$sql = $item['args'][0];
-				$params = $item['args'][1];
+				$sql = $item['args'][0] ?? null;
+				$params = $item['args'][1] ?? null;
 
 			} elseif ($item = Helpers::findTrace($e->getTrace(), \PDO::class . '::query')) {
-				$sql = $item['args'][0];
+				$sql = $item['args'][0] ?? null;
 
 			} elseif ($item = Helpers::findTrace($e->getTrace(), \PDO::class . '::prepare')) {
-				$sql = $item['args'][0];
+				$sql = $item['args'][0] ?? null;
 			}
 
 			return isset($sql) ? [
