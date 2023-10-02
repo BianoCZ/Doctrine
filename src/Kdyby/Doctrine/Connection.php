@@ -201,7 +201,11 @@ class Connection extends Doctrine\DBAL\Connection
 	{
 		$args = func_get_args();
 		try {
-			return call_user_func_array('parent::query', $args);
+			if (\version_compare(\PHP_VERSION, '8.2.0', '<')) {
+				return \call_user_func_array('parent::query', $args);
+			} else {
+				return \call_user_func_array(parent::class . '::query', $args);
+			}
 
 		} catch (\Exception $e) {
 			throw $this->resolveException($e, func_get_arg(0));
